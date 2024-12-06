@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: api
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+
+server:
+  shutdown: graceful
+  port: 8081
+
+management:
+  endpoint:
+    health:
+      access: read_only
+      probes:
+        enabled: true
