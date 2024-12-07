@@ -6,15 +6,13 @@ spring:
       client:
         registration:
           spring:
-            provider: "spring"
-            client-id: "oidc-client"
+            client-id: "bff-client"
             client-secret: "secret"
             authorization-grant-type: "authorization_code"
-            client-authentication-method: "client_secret_basic"
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - "user.read"
-              - "openid"
+              - "user.write"
         provider:
           spring:
             issuer-uri: http://localhost:9000
@@ -22,10 +20,6 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: authorization
-          uri: http://localhost:9000
-          predicates:
-            - Path=/logout
         - id: resource
           uri: http://127.0.0.1:8081
           predicates:
@@ -35,7 +29,9 @@ spring:
         - id: vue
           uri: http://127.0.0.1:4200
           predicates:
-            - Path=/**
+            - Path=/**, /spa/**, /ui/**, /frontend/**
+          filters:
+            - RewritePath=/.*,/ # Rewrite all matched paths to "/"
 
 server:
   shutdown: graceful
@@ -43,6 +39,9 @@ server:
 management:
   endpoint:
     health:
-      probes:
-        enabled: true
       access: read_only
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    web: debug

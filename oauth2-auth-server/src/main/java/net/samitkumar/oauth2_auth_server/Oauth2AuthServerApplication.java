@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -48,7 +47,9 @@ class SecurityConfig {
 								new LoginUrlAuthenticationEntryPoint("/login"),
 								new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
 						)
-				);
+				)
+				.oauth2ResourceServer((resourceServer) -> resourceServer
+						.jwt(Customizer.withDefaults()));
 
 		return http.build();
 	}
@@ -59,11 +60,15 @@ class SecurityConfig {
 			throws Exception {
 		http
 				.authorizeHttpRequests((authorize) -> authorize
+						.requestMatchers("/error").permitAll()
 						.anyRequest().authenticated()
 				)
 				// Form login handles the redirect to the login page from the
 				// authorization server filter chain
-				.formLogin(Customizer.withDefaults());
+				.formLogin(Customizer.withDefaults())
+				.csrf(Customizer.withDefaults())
+
+		;
 
 		return http.build();
 	}
