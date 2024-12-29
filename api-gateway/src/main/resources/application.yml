@@ -6,10 +6,11 @@ spring:
       client:
         registration:
           spring:
-            client-id: "bff-client"
-            client-secret: "secret"
+            provider: spring
+            client-id: "oidc-client"
+            client-secret: "secretone"
             authorization-grant-type: "authorization_code"
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri-template: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - "user.read"
               - "user.write"
@@ -33,15 +34,8 @@ spring:
           filters:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
 
-server:
-  shutdown: graceful
-
 management:
-  endpoint:
-    health:
-      access: read_only
-
-logging:
-  level:
-    org.springframework.cloud.gateway: TRACE
-    web: debug
+  endpoints:
+    web:
+      exposure:
+        include: "*"

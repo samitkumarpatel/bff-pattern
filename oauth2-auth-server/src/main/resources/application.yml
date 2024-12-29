@@ -18,10 +18,27 @@ spring:
                 - "authorization_code"
                 - "refresh_token"
               redirect-uris:
-                - "http://127.0.0.1:8080/login/oauth2/code/spring"
+                - "http://127.0.0.1:8080/login/oauth2/code/bff-client"
               scopes:
                 - "user.read"
                 - "user.write"
+          oidc-client:
+            registration:
+              client-id: "oidc-client"
+              client-secret: "{noop}secretone"
+              client-authentication-methods:
+                - "client_secret_basic"
+              authorization-grant-types:
+                - "authorization_code"
+                - "refresh_token"
+              redirect-uris:
+                - "http://127.0.0.1:8080/login/oauth2/code/spring"
+              post-logout-redirect-uris:
+                - "http://127.0.0.1:8080/"
+              scopes:
+                - "openid"
+                - "profile"
+            require-authorization-consent: true
 
 server:
   port: 9000

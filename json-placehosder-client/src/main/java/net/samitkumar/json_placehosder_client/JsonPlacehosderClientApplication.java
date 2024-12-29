@@ -1,13 +1,13 @@
-package net.samitkumar.api_gateway;
+package net.samitkumar.json_placehosder_client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ApiGatewayApplication {
+public class JsonPlacehosderClientApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ApiGatewayApplication.class, args);
+		SpringApplication.run(JsonPlacehosderClientApplication.class, args);
 	}
 
 }
