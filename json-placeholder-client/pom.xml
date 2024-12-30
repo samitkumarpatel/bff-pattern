@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>net.samitkumar</groupId>
-	<artifactId>json-placehosder-client</artifactId>
+	<artifactId>json-placeholder-client</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>json-placehosder-client</name>
 	<description>Spring Webflux Http Client</description>

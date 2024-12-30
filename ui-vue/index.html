@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>bff-pattern</title>
+        <style>
+            body {
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 800px;
+            }
+
+            #app {
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #fff;
+            }
+
+            input[type="text"] {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                margin-top: 10px;
+                height: 30px;
+                width: 300px;
+            }
+            button {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                margin-top: 10px;
+                height: 50px;
+                margin-left: 5px;
+            }
+
+            label {
+                display: block;
+                margin-top: 10px;
+            }
+
+            #search {
+                display: flex;
+                justify-content: center;
+            }
+
+            #search__result {
+                margin-top: 50px;
+            }
+
+            #search__result table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+            }
+
+            #search__result table thead {
+                background-color: #f2f2f2;
+            }
+
+            #search__result table th, #search__result table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #search__result table tr:hover {
+                background-color: #f2f2f2;
+                cursor: pointer;
+            }
+
+        </style>
+    </head>
+    <body>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <div id="app">
+            <div style="display: flex;justify-content: space-between">
+                <div>{{ message }}</div>
+                <div>Hello, {{me?.name}}</div>
+            </div>
+            <hr/>
+
+            <div v-if="Object.keys(error).length > 0" style="color: red">
+                <ul>
+                    <li v-for="e in Object.keys(error)" :key="e"> {{ e }} : {{ error[e] }}</li>
+                </ul>
+                <hr/>
+            </div>
+
+            <div id="search">
+                <form v-on:submit.prevent="search">
+                    <label for="searchbar">
+                        Type to search: <br/>
+                        <input id="searchbar" type="text" placeholder="Search" v-model="searchText" />
+                        <button type="submit">Search</button>
+                    </label>
+
+                </form>
+            </div>
+
+            <div id="search__result">
+<!--                {{ users }}-->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>name</th>
+                            <th>username</th>
+                            <th>email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in users" :key="user.id">
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+
+        <script>
+            const apiHOST = 'http://localhost:8080'
+            const { createApp, ref, onMounted } = Vue
+
+            createApp({
+                setup() {
+                    const message = ref('bff-pattern')
+                    const me = ref({})
+                    const error = ref({})
+                    const searchText = ref('')
+                    const users = ref([])
+
+                    const whoAmI = () => {
+                        fetch('/api/me')
+                            .then(response => {
+                                if( !response.ok )
+                                    throw new Error('Network response was not ok.')
+                                return response.json()
+                            })
+                            .then(data => me.value = data)
+                            .catch(e => error.value["/api/me"] = e.message)
+                    }
+
+                    const search = () => {
+                        fetch(`/json-placeholder/users/search?text=${searchText.value}`)
+                            .then(response => {
+                                if( !response.ok )
+                                    throw new Error('Network response was not ok.')
+                                return response.json()
+                            })
+                            .then(data => users.value = data)
+                            .catch(e => error.value["/json-placeholder/users/search"] = e.message)
+                    }
+
+                    const allUsers = () => {
+                        fetch(`/json-placeholder/users`)
+                            .then(response => {
+                                if( !response.ok )
+                                    throw new Error('Network response was not ok.')
+                                return response.json()
+                            })
+                            .then(data => users.value = data)
+                            .catch(e => error.value["/json-placeholder/users"] = e.message)
+                    }
+
+                    onMounted(() => {
+                        whoAmI()
+                        allUsers()
+                    })
+
+                    return {
+                        message, me, error, searchText, users, search
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>

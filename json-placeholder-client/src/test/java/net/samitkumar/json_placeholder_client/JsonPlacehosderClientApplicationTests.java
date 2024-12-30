@@ -1,4 +1,4 @@
-package net.samitkumar.json_placehosder_client;
+package net.samitkumar.json_placeholder_client;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -5,34 +5,77 @@ spring:
     oauth2:
       client:
         registration:
-          spring:
-            provider: spring
-            client-id: "oidc-client"
-            client-secret: "secretone"
+          gateway:
+            provider: "spring"
+            client-id: "gateway"
+            client-secret: "secret"
             authorization-grant-type: "authorization_code"
-            redirect-uri-template: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-authentication-method: "client_secret_basic"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - "user.read"
               - "user.write"
+              - "openid"
         provider:
           spring:
             issuer-uri: http://localhost:9000
 
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+      default-filters:
+        - TokenRelay
       routes:
-        - id: resource
-          uri: http://127.0.0.1:8081
-          predicates:
-            - Path=/api/**, /db/**, /ws/**
-          filters:
-            - TokenRelay=
-        - id: vue
+
+        - id: ui-vue
           uri: http://127.0.0.1:4200
           predicates:
-            - Path=/**, /spa/**, /ui/**, /frontend/**
+            - Path=/, /spa/**, /ui/**, /frontend/**
           filters:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
+
+        - id: api
+          uri: http://localhost:8081
+          predicates:
+              - Path=/api/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+
+#        - id: user_service_list
+#          uri: http://localhost:8082
+#          predicates:
+#            - Path=/json-placeholder/users
+#          filters:
+#            - RewritePath=/json-placeholder/users, /users
+#
+#        - id: user_service_detail
+#          uri: http://localhost:8082
+#          predicates:
+#            - Path=/json-placeholder/users/{id}
+#          filters:
+#            - RewritePath=/json-placeholder/users/(?<id>.*), /users/${id}
+#
+#        - id: user_service_search
+#          uri: http://localhost:8082
+#          predicates:
+#            - Path=/json-placeholder/users/search
+#            - Query=text
+#          filters:
+#            - RewritePath=/json-placeholder/users/search, /users/search
+
+        - id: json-placeholder-client
+          uri: http://localhost:8082
+          predicates:
+          - Path=/json-placeholder/**, /json-placeholder/users/**, /json-placeholder/users/search
+          filters:
+            - TokenRelay
+            - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
+
+
+
 
 management:
   endpoints:
