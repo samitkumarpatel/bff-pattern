@@ -22,14 +22,23 @@ spring:
 
   cloud:
     gateway:
+#      default-filters:
+#        - TokenRelay
       globalcors:
         corsConfigurations:
           '[/**]':
             allowedOrigins: "*"
-      default-filters:
-        - TokenRelay
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+            maxAge: 3600
       routes:
-
         - id: ui-vue
           uri: http://127.0.0.1:4200
           predicates:
@@ -42,40 +51,44 @@ spring:
           predicates:
               - Path=/api/**
           filters:
+            - TokenRelay
             - RewritePath=/api/(?<segment>.*), /$\{segment}
 
-#        - id: user_service_list
-#          uri: http://localhost:8082
-#          predicates:
-#            - Path=/json-placeholder/users
-#          filters:
-#            - RewritePath=/json-placeholder/users, /users
-#
-#        - id: user_service_detail
-#          uri: http://localhost:8082
-#          predicates:
-#            - Path=/json-placeholder/users/{id}
-#          filters:
-#            - RewritePath=/json-placeholder/users/(?<id>.*), /users/${id}
-#
-#        - id: user_service_search
-#          uri: http://localhost:8082
-#          predicates:
-#            - Path=/json-placeholder/users/search
-#            - Query=text
-#          filters:
-#            - RewritePath=/json-placeholder/users/search, /users/search
+        - id: json-placeholder-client-search
+          uri: http://localhost:8082
+          predicates:
+            - Path=/json-placeholder/users/search
+          filters:
+            - TokenRelay=gateway
+            - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
 
         - id: json-placeholder-client
           uri: http://localhost:8082
           predicates:
-          - Path=/json-placeholder/**, /json-placeholder/users/**, /json-placeholder/users/search
+          - Path=/json-placeholder/**, /json-placeholder/users/**
           filters:
             - TokenRelay
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
 
-
-
+        - id: json-placeholder
+          uri: https://jsonplaceholder.typicode.com
+          predicates:
+              - Path=/json-placeholder-raw/**
+              - Path=/json-placeholder-raw/users/**
+          filters:
+            - RewritePath=/json-placeholder-raw/(?<segment>.*), /$\{segment}
+          metadata:
+            cors:
+              allowedOrigins: '*'
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              allowedHeaders: '*'
+              maxAge: 30
 
 management:
   endpoints:

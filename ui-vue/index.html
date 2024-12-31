@@ -69,6 +69,45 @@
                 cursor: pointer;
             }
 
+            .selected__table__row {
+                background-color: #f2f2f2;
+            }
+
+            #user__in__details {
+                margin-top: 50px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 20px;
+            }
+
+            .tabs {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+            }
+            .tab {
+                padding: 10px;
+                border-left: 1px solid #ccc;
+                border-right: 1px solid #ccc;
+                border-top: 1px solid #ccc;
+                border-radius: 5px;
+                margin-top: 10px;
+                height: 30px;
+                width: 100px;
+                text-align: center;
+                cursor: pointer;
+            }
+            .tab:hover {
+                background-color: #f2f2f2;
+                padding: 15px;
+            }
+
+            .selected__tab {
+                background-color: #f2f2f2;
+                padding: 15px;
+            }
+
         </style>
     </head>
     <body>
@@ -89,18 +128,16 @@
             </div>
 
             <div id="search">
-                <form v-on:submit.prevent="search">
+                <form @submit.prevent="search(searchText)">
                     <label for="searchbar">
                         Type to search: <br/>
-                        <input id="searchbar" type="text" placeholder="Search" v-model="searchText" />
-                        <button type="submit">Search</button>
+                        <input id="searchbar" type="text" placeholder="Search" v-model="searchText" disabled />
+                        <button type="submit" :disabled="!searchText">Search</button>
                     </label>
-
                 </form>
             </div>
 
             <div id="search__result">
-<!--                {{ users }}-->
                 <table>
                     <thead>
                         <tr>
@@ -111,7 +148,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="user in users" :key="user.id">
+                        <tr v-for="user in users" :key="user.id" @click="() => selectedUser = user" :class="selectedUser.id === user.id ? 'selected__table__row' : ''">
                             <td>{{ user.id }}</td>
                             <td>{{ user.name }}</td>
                             <td>{{ user.username }}</td>
@@ -121,12 +158,17 @@
                 </table>
             </div>
 
-
+            <div id="user__in__details" v-if="Object.keys(selectedUser).length > 0">
+                <pre>{{ selectedUser }}</pre>
+                <ul class="tabs">
+                    <li :class=" currentTab === tab ? 'tab selected__tab' : 'tab' " v-for="(_, tab) in tabs" @click="currentTab = tab">{{ tab }}</li>
+                </ul>
+                <component :is="tabs[currentTab]" :id="selectedUser.id"></component>
+            </div>
         </div>
 
         <script>
-            const apiHOST = 'http://localhost:8080'
-            const { createApp, ref, onMounted } = Vue
+            const { createApp, ref, toRef, onMounted, watch } = Vue
 
             createApp({
                 setup() {
@@ -135,6 +177,65 @@
                     const error = ref({})
                     const searchText = ref('')
                     const users = ref([])
+                    const selectedUser = ref({})
+                    const currentTab = ref('Todo')
+
+                    const Todo = {
+                        props: ['id'],
+                        emits: [],
+                        setup(props, { emit }) {
+                            const id = toRef(props, 'id')
+                            const data = ref([])
+                            const fetchData = () => {
+                                fetch(`json-placeholder-raw/users/${id.value}/todos`)
+                                    .then(response => {
+                                        if( !response.ok )
+                                            throw new Error('Network response was not ok.')
+                                        return response.json()
+                                    })
+                                    .then(data => data.value = data)
+                                    .catch(e => error.value["/json-placeholder-raw/users/id/todos"] = e.message)
+                            }
+                            watch(id, fetchData, { immediate: true })
+                            return { id, data }
+                        },
+                        template: `<h4>{{id}}</h4><pre>{{ data }}</pre>`
+                    }
+
+                    const Album = {
+                        props: ['id'],
+                        emits: [],
+                        setup(props, { emit }) {
+                            const id = toRef(props, 'id')
+                            const data = ref([])
+                            return { data }
+                        },
+                        template: `<pre>{{ data }}</pre>`
+                    }
+
+                    const Post = {
+                        props: ['id'],
+                        emits: [],
+                        setup(props, { emit }) {
+                            const id = toRef(props, 'id')
+                            const data = ref([])
+                            return { data }
+                        },
+                        template: `<pre>{{ data }}</pre>`
+                    }
+
+                    const Db = {
+                        props: ['id'],
+                        emits: [],
+                        setup(props, { emit }) {
+                            const id = toRef(props, 'id')
+                            const data = ref([])
+                            return { data }
+                        },
+                        template: `<pre>{{ data }}</pre>`
+                    }
+
+                    const tabs = {'Todo': Todo, 'Album': Album, 'Post': Post, 'Db': Db}
 
                     const whoAmI = () => {
                         fetch('/api/me')
@@ -147,8 +248,22 @@
                             .catch(e => error.value["/api/me"] = e.message)
                     }
 
-                    const search = () => {
-                        fetch(`/json-placeholder/users/search?text=${searchText.value}`)
+                    const search = (sText) => {
+                        if (!sText) {
+                            error.value["searchText"] = "Search text cannot be empty.";
+                            return;
+                        }
+
+                        fetch(`/json-placeholder/users/search?text=${sText}`, {
+                                method: 'GET',
+                                cors: 'no-cors',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'Authorization': `Bearer ${me.value.principal.tokenValue}`
+                                }
+                        })
                             .then(response => {
                                 if( !response.ok )
                                     throw new Error('Network response was not ok.')
@@ -156,6 +271,7 @@
                             })
                             .then(data => users.value = data)
                             .catch(e => error.value["/json-placeholder/users/search"] = e.message)
+                            .finally(() => searchText.value = '')
                     }
 
                     const allUsers = () => {
@@ -175,7 +291,7 @@
                     })
 
                     return {
-                        message, me, error, searchText, users, search
+                        message, me, error, searchText, users, search, selectedUser, tabs, currentTab
                     }
                 }
             }).mount('#app')
