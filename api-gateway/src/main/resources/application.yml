@@ -59,7 +59,6 @@ spring:
           filters:
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
             - SaveSession
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
         - id: json-placeholder-client
           uri: http://localhost:8082
@@ -68,7 +67,6 @@ spring:
           filters:
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
             - SaveSession
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
         - id: json-placeholder
           uri: https://jsonplaceholder.typicode.com
@@ -78,9 +76,11 @@ spring:
           filters:
             - RewritePath=/json-placeholder-raw/(?<segment>.*), /$\{segment}
             - SaveSession
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
 management:
+  endpoint:
+    gateway:
+      access: read_only
   endpoints:
     web:
       exposure:

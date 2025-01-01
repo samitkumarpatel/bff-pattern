@@ -3,6 +3,12 @@ package net.samitkumar.json_placeholder_client;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -45,6 +51,23 @@ public class JsonPlaceholderClientApplication {
 				.build();
 	}
 }
+
+/*@Configuration
+@EnableWebFluxSecurity
+class WebfluxSecurityConfig {
+	@Bean
+	public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) throws Exception {
+		return http
+				.cors(ServerHttpSecurity.CorsSpec::disable)
+				.csrf(ServerHttpSecurity.CsrfSpec::disable)
+				.authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
+						.pathMatchers(HttpMethod.OPTIONS).permitAll() // Allow OPTIONS requests without authentication
+						.anyExchange().authenticated()
+				)
+				.oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec.jwt(Customizer.withDefaults()))
+				.build();
+	}
+}*/
 
 record User(int id, String name, String username, String email, String phone, String website, Address address, Company company) {}
 record Address(String street, String suite, String city, String zipcode, Geo geo) {}

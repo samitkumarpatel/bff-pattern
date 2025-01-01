@@ -165,6 +165,7 @@
                 </ul>
                 <component :is="tabs[currentTab]" :id="selectedUser.id"></component>
             </div>
+
         </div>
         <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
         <script>
@@ -187,7 +188,7 @@
                             const id = toRef(props, 'id')
                             const data = ref([])
                             const fetchData = () => {
-                                fetch(`json-placeholder-raw/users/${id.value}/todos`)
+                                fetch(`/json-placeholder-raw/users/${id.value}/todos`)
                                     .then(response => {
                                         if( !response.ok )
                                             throw new Error('Network response was not ok.')
@@ -254,21 +255,11 @@
                             return;
                         }
 
-                        // fetch(`/json-placeholder/users/search?text=${sText}`, {
-                        //     credentials: "include",
-                        //     cors: "no-cors"
-                        // })
-                        //     .then(response => {
-                        //         if( !response.ok )
-                        //             throw new Error('Network response was not ok.')
-                        //         return response.json()
-                        //     })
-                        //     .then(data => users.value = data)
-                        //     .catch(e => error.value["/json-placeholder/users/search"] = e.message)
-                        //     .finally(() => searchText.value = '')
-
-                        axios.get(`/json-placeholder/users/search?text=${sText}`,{
-                            withCredentials: true
+                        fetch(`/json-placeholder/users/search?text=${sText}`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
                         })
                             .then(response => {
                                 if( !response.ok )
@@ -278,6 +269,18 @@
                             .then(data => users.value = data)
                             .catch(e => error.value["/json-placeholder/users/search"] = e.message)
                             .finally(() => searchText.value = '')
+
+                        // axios.get(`/json-placeholder/users/search?text=${sText}`,{
+                        //     withCredentials: true
+                        // })
+                        //     .then(response => {
+                        //         if( !response.ok )
+                        //             throw new Error('Network response was not ok.')
+                        //         return response.json()
+                        //     })
+                        //     .then(data => users.value = data)
+                        //     .catch(e => error.value["/json-placeholder/users/search"] = e.message)
+                        //     .finally(() => searchText.value = '')
 
                     }
 
