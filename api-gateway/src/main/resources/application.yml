@@ -22,12 +22,12 @@ spring:
 
   cloud:
     gateway:
-#      default-filters:
-#        - TokenRelay
+      default-filters:
+        - TokenRelay
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins: "http://localhost:8080"
             allowedMethods:
               - GET
               - POST
@@ -36,8 +36,7 @@ spring:
               - PATCH
               - OPTIONS
             allowedHeaders: "*"
-            allowCredentials: false
-            maxAge: 3600
+            allowCredentials: true
       routes:
         - id: ui-vue
           uri: http://127.0.0.1:4200
@@ -51,7 +50,6 @@ spring:
           predicates:
               - Path=/api/**
           filters:
-            - TokenRelay
             - RewritePath=/api/(?<segment>.*), /$\{segment}
 
         - id: json-placeholder-client-search
@@ -59,16 +57,18 @@ spring:
           predicates:
             - Path=/json-placeholder/users/search
           filters:
-            - TokenRelay=gateway
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
+            - SaveSession
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
         - id: json-placeholder-client
           uri: http://localhost:8082
           predicates:
           - Path=/json-placeholder/**, /json-placeholder/users/**
           filters:
-            - TokenRelay
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
+            - SaveSession
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
         - id: json-placeholder
           uri: https://jsonplaceholder.typicode.com
@@ -77,18 +77,8 @@ spring:
               - Path=/json-placeholder-raw/users/**
           filters:
             - RewritePath=/json-placeholder-raw/(?<segment>.*), /$\{segment}
-          metadata:
-            cors:
-              allowedOrigins: '*'
-              allowedMethods:
-                - GET
-                - POST
-                - PUT
-                - DELETE
-                - PATCH
-                - OPTIONS
-              allowedHeaders: '*'
-              maxAge: 30
+            - SaveSession
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 
 management:
   endpoints:

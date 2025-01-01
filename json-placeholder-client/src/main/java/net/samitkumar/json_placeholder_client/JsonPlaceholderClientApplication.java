@@ -5,9 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -27,21 +24,6 @@ public class JsonPlaceholderClientApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(JsonPlaceholderClientApplication.class, args);
 	}
-
-	/*@Bean
-	CorsWebFilter corsFilter() {
-
-		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowCredentials(true);
-		config.addAllowedOriginPattern("*");
-		config.addAllowedHeader("*");
-		config.addAllowedMethod("*");
-
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", config);
-
-		return new CorsWebFilter(source);
-	}*/
 
 	@Bean
 	JsonPlaceholderClient jsonPlaceholderClient(WebClient.Builder webClientBuilder) {
