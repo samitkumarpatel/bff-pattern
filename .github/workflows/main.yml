@@ -1,0 +1,22 @@
+name: bff pattern pipeline
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+  docker-image-build:
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        folder: [api-gateway, oauth2-auth-server, websocket, db, api]
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./${{matrix.folder}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: debug
+        shell: |
+          echo ${{ matrix.folder }}
+          ls -al
