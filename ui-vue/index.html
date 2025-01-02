@@ -136,7 +136,7 @@
                     </label>
                 </form>
             </div>
-
+            <p style="text-align: right;color: blue; cursor: pointer" v-if="searchResult" @click="resetResult">Reset Search</p>
             <div id="search__result">
                 <table>
                     <thead>
@@ -163,11 +163,10 @@
                 <ul class="tabs">
                     <li :class=" currentTab === tab ? 'tab selected__tab' : 'tab' " v-for="(_, tab) in tabs" @click="currentTab = tab">{{ tab }}</li>
                 </ul>
-                <component :is="tabs[currentTab]" :id="selectedUser.id"></component>
+                <component :is="tabs[currentTab]" :id="selectedUser.id" @error-payload="(e) => console.log(e)"></component>
             </div>
 
         </div>
-        <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
         <script>
             const { createApp, ref, toRef, onMounted, watch } = Vue
 
@@ -177,63 +176,99 @@
                     const me = ref({})
                     const error = ref({})
                     const searchText = ref('')
+                    const searchResult = ref(false)
                     const users = ref([])
                     const selectedUser = ref({})
                     const currentTab = ref('Todo')
 
                     const Todo = {
                         props: ['id'],
-                        emits: [],
+                        emits: ['errorPayload'],
                         setup(props, { emit }) {
                             const id = toRef(props, 'id')
-                            const data = ref([])
+                            const userTodos = ref([])
                             const fetchData = () => {
                                 fetch(`/json-placeholder-raw/users/${id.value}/todos`)
                                     .then(response => {
                                         if( !response.ok )
-                                            throw new Error('Network response was not ok.')
+                                            throw new Error(`Network response was not ok. status :${response.status}`)
                                         return response.json()
                                     })
-                                    .then(data => data.value = data)
+                                    .then(data => userTodos.value = data)
                                     .catch(e => error.value["/json-placeholder-raw/users/id/todos"] = e.message)
                             }
                             watch(id, fetchData, { immediate: true })
-                            return { id, data }
+                            onMounted(() => fetchData())
+                            return { id, userTodos }
                         },
-                        template: `<h4>{{id}}</h4><pre>{{ data }}</pre>`
+                        template: `
+                          <h4>UserId: {{id}}</h4>
+                          <pre>{{ userTodos }}</pre>
+                        `
                     }
 
                     const Album = {
                         props: ['id'],
-                        emits: [],
+                        emits: ['errorPayload'],
                         setup(props, { emit }) {
                             const id = toRef(props, 'id')
-                            const data = ref([])
-                            return { data }
+                            const userAlbum = ref([])
+                            const fetchData = () => {
+                                fetch(`/json-placeholder-raw/users/${id.value}/albums`)
+                                    .then(response => {
+                                        if( !response.ok )
+                                            throw new Error(`Network response was not ok. status :${response.status}`)
+                                        return response.json()
+                                    })
+                                    .then(data => userAlbum.value = data)
+                                    .catch(e => emit('error-payload', { key: "/json-placeholder-raw/users/id/albums", value: e.message }))
+                            }
+                            onMounted(() => fetchData())
+                            watch(id, fetchData, { immediate: true })
+                            return { id, userAlbum }
                         },
-                        template: `<pre>{{ data }}</pre>`
+                        template: `
+                          <h4>UserId: {{id}}</h4>
+                          <pre>{{ userAlbum }}</pre>
+                        `
                     }
 
                     const Post = {
                         props: ['id'],
-                        emits: [],
+                        emits: ['errorPayload'],
                         setup(props, { emit }) {
                             const id = toRef(props, 'id')
-                            const data = ref([])
-                            return { data }
+                            const postData = ref([])
+                            const fetchData = () => {
+                                fetch(`/json-placeholder-raw/users/${id.value}/posts`)
+                                    .then(response => {
+                                        if( !response.ok )
+                                            throw new Error(`Network response was not ok. status :${response.status}`)
+                                        return response.json()
+                                    })
+                                    .then(data => postData.value = data)
+                                    .catch(e => error.value["/json-placeholder-raw/users/id/posts"] = e.message)
+                            }
+                            onMounted(() => fetchData())
+                            watch(id, fetchData, { immediate: true })
+                            return { id, postData }
                         },
-                        template: `<pre>{{ data }}</pre>`
+                        template: `
+                          <h4>UserId: {{id}}</h4>
+                          <pre>{{ postData }}</pre>
+                        `
                     }
 
                     const Db = {
                         props: ['id'],
-                        emits: [],
+                        emits: ['errorPayload'],
                         setup(props, { emit }) {
                             const id = toRef(props, 'id')
-                            const data = ref([])
-                            return { data }
+                            const dbData = ref([])
+                            onMounted(() => emit('errorPayload', { key: "/json-placeholder-raw/users/id/db", value: "Under Construction" }))
+                            return { id, dbData }
                         },
-                        template: `<pre>{{ data }}</pre>`
+                        template: `<h2>Under Construction ...</h2><pre>{{ dbData }}</pre>`
                     }
 
                     const tabs = {'Todo': Todo, 'Album': Album, 'Post': Post, 'Db': Db}
@@ -242,7 +277,7 @@
                         fetch('/api/me')
                             .then(response => {
                                 if( !response.ok )
-                                    throw new Error('Network response was not ok.')
+                                    throw new Error(`Network response was not ok. status :${response.status}`)
                                 return response.json()
                             })
                             .then(data => me.value = data)
@@ -263,36 +298,35 @@
                         })
                             .then(response => {
                                 if( !response.ok )
-                                    throw new Error('Network response was not ok.')
+                                    throw new Error(`Network response was not ok. status :${response.status}`)
                                 return response.json()
                             })
                             .then(data => users.value = data)
                             .catch(e => error.value["/json-placeholder/users/search"] = e.message)
-                            .finally(() => searchText.value = '')
-
-                        // axios.get(`/json-placeholder/users/search?text=${sText}`,{
-                        //     withCredentials: true
-                        // })
-                        //     .then(response => {
-                        //         if( !response.ok )
-                        //             throw new Error('Network response was not ok.')
-                        //         return response.json()
-                        //     })
-                        //     .then(data => users.value = data)
-                        //     .catch(e => error.value["/json-placeholder/users/search"] = e.message)
-                        //     .finally(() => searchText.value = '')
-
+                            .finally(() => {
+                                searchText.value = ''
+                                searchResult.value = true
+                            })
                     }
 
                     const allUsers = () => {
                         fetch(`/json-placeholder/users`)
                             .then(response => {
                                 if( !response.ok )
-                                    throw new Error('Network response was not ok.')
+                                    throw new Error(`Network response was not ok. status :${response.status}`)
                                 return response.json()
                             })
                             .then(data => users.value = data)
                             .catch(e => error.value["/json-placeholder/users"] = e.message)
+                    }
+
+                    const componentError = (payload) => {
+                        error.value[payload.key] = payload.value
+                    }
+
+                    const resetResult = () => {
+                        searchResult.value = false
+                        allUsers()
                     }
 
                     onMounted(() => {
@@ -301,7 +335,7 @@
                     })
 
                     return {
-                        message, me, error, searchText, users, search, selectedUser, tabs, currentTab
+                        message, me, error, searchText, users, search, selectedUser, tabs, currentTab, componentError, searchResult, resetResult
                     }
                 }
             }).mount('#app')

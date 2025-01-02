@@ -22,8 +22,8 @@ spring:
 
   cloud:
     gateway:
-      default-filters:
-        - TokenRelay
+#      default-filters:
+#        - TokenRelay
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -44,6 +44,8 @@ spring:
             - Path=/, /spa/**, /ui/**, /frontend/**
           filters:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
+            - SaveSession
+            - TokenRelay
 
         - id: api
           uri: http://localhost:8081
@@ -51,6 +53,9 @@ spring:
               - Path=/api/**
           filters:
             - RewritePath=/api/(?<segment>.*), /$\{segment}
+            - SaveSession
+            - TokenRelay
+            - RemoveRequestHeader=Cookie
 
         - id: json-placeholder-client-search
           uri: http://localhost:8082
@@ -59,6 +64,8 @@ spring:
           filters:
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
             - SaveSession
+            - TokenRelay
+            - RemoveRequestHeader=Cookie
 
         - id: json-placeholder-client
           uri: http://localhost:8082
@@ -67,15 +74,17 @@ spring:
           filters:
             - RewritePath=/json-placeholder/(?<segment>.*), /$\{segment}
             - SaveSession
+            - TokenRelay
+            - RemoveRequestHeader=Cookie
 
         - id: json-placeholder
           uri: https://jsonplaceholder.typicode.com
           predicates:
               - Path=/json-placeholder-raw/**
-              - Path=/json-placeholder-raw/users/**
           filters:
             - RewritePath=/json-placeholder-raw/(?<segment>.*), /$\{segment}
             - SaveSession
+            - RemoveRequestHeader=Cookie
 
 management:
   endpoint:
