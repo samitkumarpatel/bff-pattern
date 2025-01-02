@@ -7,10 +7,10 @@ on:
 jobs:
   docker-image-build:
     runs-on: "ubuntu-latest"
+    continue-on-error: false
     strategy:
       fail-fast: true
       max-parallel: 1
-      continue-on-error: false
       matrix:
         folder: [api-gateway, oauth2-auth-server, websocket, db, api]
     defaults:
