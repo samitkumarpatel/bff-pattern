@@ -14,9 +14,22 @@ jobs:
       run:
         shell: bash
         working-directory: ./${{matrix.folder}}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Display the folder structure
-        run: |
-          echo ${{ matrix.folder}}
-          ls -al
+
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yml@main
+    secrets: inherit
+    with:
+      build-jar: false
+      build-image: true
+      native-image: false
+
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Display the folder structure
+#        run: |
+#          echo ${{ matrix.folder}}
+#          ls -al

@@ -114,7 +114,7 @@
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
         <div id="app">
-            <div style="display: flex;justify-content: space-between">
+            <div style="display: flex; justify-content: space-between">
                 <div>{{ message }}</div>
                 <div>Hello, {{me?.name}}</div>
             </div>
@@ -136,7 +136,7 @@
                     </label>
                 </form>
             </div>
-            <p style="text-align: right;color: blue; cursor: pointer" v-if="searchResult" @click="resetResult">Reset Search</p>
+            <p style="text-align: right;color: blue; cursor: pointer; text-decoration: underline" v-if="searchResult" @click="resetResult">Reset Search</p>
             <div id="search__result">
                 <table>
                     <thead>
