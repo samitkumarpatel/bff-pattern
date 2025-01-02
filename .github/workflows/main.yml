@@ -16,7 +16,7 @@ jobs:
         working-directory: ./${{matrix.folder}}
     steps:
       - uses: actions/checkout@v4
-      - name: debug
-        shell: |
-          echo ${{ matrix.folder }}
+      - name: Display the folder structure
+        run: |
+          echo ${{ matrix.folder}}
           ls -al
