@@ -57,4 +57,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: push buildpack image
-        run: docker push -a ghcr.io/${{ github.repository }}
+        run: docker push -a ghcr.io/${{ github.repository }}-${{ matrix.folder}}
