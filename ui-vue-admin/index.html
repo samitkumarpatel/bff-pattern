@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>admin</title>
+    <style>
+        body {
+            margin-left: auto;
+            margin-right: auto;
+            width: 30%;
+        }
+
+        #app {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+            height: 60px;
+            width: 300px;
+        }
+        select option {
+            padding: 10px;
+        }
+
+        #user__select, #user-details {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #user-details p {
+            margin: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <div id="app">
+        <div style="display: flex; justify-content: space-between">
+            <h2>{{ message }}</h2>
+            <p>Welcome {{ me.name }}</p>
+        </div>
+        <hr/>
+
+        <div style="color: red" v-if="Object.keys(error).length > 0">
+            {{ error }}
+            <hr/>
+        </div>
+
+        <div id="user__select">
+            <label>
+                Select a user: <br/>
+                <select>
+                    <option :value="user.id" v-for="user in users">{{ user.name}} (id: {{user.id}})</option>
+                </select>
+            </label>
+        </div>
+
+        <div id="user-details">
+            <h4>The selected user has :</h4>
+            <p>Todo count : {{ todoCount }} </p>
+            <p>Post count : {{ postCount }} </p>
+            <p>Album count : {{ albumCount }} </p>
+            <button style="height: 40px; background-color: green; color: white; cursor: pointer" type="button">Save this data to db</button>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue
+
+        createApp({
+            setup() {
+                const message = ref('Admin Portal!')
+                const me = ref({})
+                const users = ref([])
+                const error = ref({})
+                const todoCount = ref(0)
+                const postCount = ref(0)
+                const albumCount = ref(0)
+
+                const whoAmI = () => {
+                    fetch('/api/me')
+                        .then(response => {
+                            if( !response.ok )
+                                throw new Error(`Network response was not ok. status :${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => me.value = data)
+                        .catch(e => error.value["/api/me"] = e.message)
+                }
+
+                const allUsers = () => {
+                    fetch(`/json-placeholder-raw/users`)
+                        .then(response => {
+                            if( !response.ok )
+                                throw new Error(`Network response was not ok. status :${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => users.value = data)
+                        .catch(e => error.value["/json-placeholder/users"] = e.message)
+                }
+
+                onMounted(() => {
+                    whoAmI()
+                    allUsers()
+                })
+
+                return {
+                    message, me, users, error, todoCount, postCount, albumCount
+                }
+            }
+        }).mount('#app')
+    </script>
+
+</body>
+</html>

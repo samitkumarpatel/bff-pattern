@@ -46,6 +46,14 @@ spring:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
             - SaveSession
             - TokenRelay
+        - id: ui-vue-admin
+          uri: http://127.0.0.1:4201
+          predicates:
+            - Path=/admin/**
+          filters:
+            - RewritePath=/.*,/ # Rewrite all matched paths to "/"
+            - SaveSession
+            - TokenRelay
 
         - id: api
           uri: http://localhost:8081
