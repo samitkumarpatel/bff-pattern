@@ -38,7 +38,7 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        - id: ui-vue
+        - id: ui-vue-search
           uri: http://127.0.0.1:4200
           predicates:
             - Path=/, /spa/**, /ui/**, /frontend/**
@@ -46,10 +46,20 @@ spring:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
             - SaveSession
             - TokenRelay
+
         - id: ui-vue-admin
           uri: http://127.0.0.1:4201
           predicates:
             - Path=/admin/**
+          filters:
+            - RewritePath=/.*,/ # Rewrite all matched paths to "/"
+            - SaveSession
+            - TokenRelay
+
+        - id: ui-vue-user
+          uri: http://127.0.0.1:4202
+          predicates:
+            - Path=/user/**
           filters:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
             - SaveSession

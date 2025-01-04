@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>admin</title>
+    <title>bff-pattern::admin</title>
     <style>
         body {
             margin-left: auto;
             margin-right: auto;
-            width: 30%;
+            width: 50%;
         }
 
         #app {
@@ -30,6 +30,12 @@
             padding: 10px;
         }
 
+        #user-details {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
         #user__select, #user-details {
             margin-top: 20px;
             text-align: center;
@@ -38,6 +44,13 @@
         #user-details p {
             margin: 10px;
             text-align: center;
+        }
+
+        .child {
+            border: 1px solid gray;
+            padding: 10px;
+            border-radius: 5px;
+            width: auto;
         }
     </style>
 </head>
@@ -59,23 +72,82 @@
         <div id="user__select">
             <label>
                 Select a user: <br/>
-                <select>
+                <select v-model="selectedUser">
+                    <option value="null" disabled>Please Select user</option>
                     <option :value="user.id" v-for="user in users">{{ user.name}} (id: {{user.id}})</option>
                 </select>
             </label>
         </div>
+        <div v-if="selectedUser">
+            <h3>User Overview :</h3>
+            <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 5px;">
+                <div class="child">
+                    <p><strong>Name:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).name : '' }}</p>
+                    <p><strong>Email:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).email : '' }}</p>
+                    <p><strong>Phone:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).phone : '' }}</p>
+                </div>
+                <div class="child">
+                    <p>User Address: </p>
+                    <hr/>
+                    <ul>
+                        <li><strong>Street:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).address.street : '' }}</li>
+                        <li><strong>Suite:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).address.suite : '' }}</li>
+                        <li><strong>City:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).address.city : '' }}</li>
+                        <li><strong>Zipcode:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).address.zipcode : '' }}</li>
+                        <li><strong>Geo:</strong>
+                            <ul>
+                                <li><strong>Lat:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).address.geo.lat : '' }}</li>
+                                <li><strong>Lng:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).address.geo.lng : '' }}</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="child">
+                    <p>User Company: </p>
+                    <hr/>
+                    <ul>
+                        <li><strong>Name:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).company.name : '' }}</li>
+                        <li><strong>CatchPhrase:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).company.catchPhrase : '' }}</li>
+                        <li><strong>BS:</strong> {{ selectedUser ? users.find(u => u.id === selectedUser).company.bs : '' }}</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="user-details">
+                <div class="child">
+                    <p>Total <strong>Todo</strong> count : {{ todoCount.length }} </p>
+                    <hr/>
+                    <ul v-if="todoCount">
+                        <li>Enable Todo's count: {{ todoCount.filter(t => t.completed ).length }}</li>
+                        <li>Disable Todo's count: {{ todoCount.filter(t => !t.completed ).length }}</li>
+                    </ul>
 
-        <div id="user-details">
-            <h4>The selected user has :</h4>
-            <p>Todo count : {{ todoCount }} </p>
-            <p>Post count : {{ postCount }} </p>
-            <p>Album count : {{ albumCount }} </p>
-            <button style="height: 40px; background-color: green; color: white; cursor: pointer" type="button">Save this data to db</button>
+                </div>
+                <div style="text-align: left" class="child">
+                    <p>Total <strong>Post</strong> count : {{ postCount.length }} </p>
+                    <hr/>
+                    <ul>
+                        <li v-for="post in postCount">postId: <strong>{{ post.id }}</strong> total comments count : {{ post.comments }} </li>
+                    </ul>
+
+                </div>
+                <div style="text-align: left" class="child">
+                    <p>Total <strong>Album</strong> count : {{ albumCount.length }} </p>
+                    <hr/>
+                    <ul>
+                        <li v-for="album in albumCount">albumId: <strong> {{ album.id }}</strong> total photos count: {{ album.photos }}</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top: 15px">
+                <button style="height: 40px;">Save this data to db</button>
+                <button style="height: 40px;">Disable This User</button>
+            </div>
+
         </div>
     </div>
 
     <script>
-        const { createApp, ref, onMounted } = Vue
+        const { createApp, ref, onMounted, watch } = Vue
 
         createApp({
             setup() {
@@ -86,6 +158,7 @@
                 const todoCount = ref(0)
                 const postCount = ref(0)
                 const albumCount = ref(0)
+                const selectedUser = ref(null)
 
                 const whoAmI = () => {
                     fetch('/api/me')
@@ -109,13 +182,98 @@
                         .catch(e => error.value["/json-placeholder/users"] = e.message)
                 }
 
+                const fetchTodosPostAlbumTogather = (userId) => {
+                    Promise.all([
+                        fetch(`/json-placeholder-raw/users/${userId}/todos`),
+                        fetch(`/json-placeholder-raw/users/${userId}/posts`),
+                        fetch(`/json-placeholder-raw/users/${userId}/albums`)])
+                        .then((responses) => {
+                            // Check if all responses are successful
+                            return Promise.all(
+                                responses.map((response) => {
+                                    if (!response.ok) {
+                                        throw new Error(`API call failed: ${response.statusText}`);
+                                    }
+                                    return response.json();
+                                })
+                            );
+                        })
+                        .then((results) => {
+                            // Process results
+                            todoCount.value = results[0]
+
+                            postCount.value = results[1].map(post => {
+                                return { id: post.id, comments: 0 }
+                            })
+
+                            albumCount.value = results[2].map(album => {
+                                return { id: album.id, photos: 0 }
+                            })
+                        })
+                        .catch((error) => error.value["/json-placeholder/users/*/***"] = error.message);
+                }
+
+                const findPhotos = (albumId) => {
+                    return fetch(`/json-placeholder-raw/photos?albumid=${albumId}`)
+                        .then(response => {
+                            if( !response.ok )
+                                throw new Error(`Network response was not ok. status :${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => data)
+                        .catch(e => error.value["/json-placeholder/albums/*"] = e.message)
+                }
+
+                const findComments = (postId) => {
+                    return fetch(`/json-placeholder-raw/comments?postid=${postId}`)
+                        .then(response => {
+                            if( !response.ok )
+                                throw new Error(`Network response was not ok. status :${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => data)
+                        .catch(e => error.value["/json-placeholder/posts/*"] = e.message)
+                }
+
+                watch(
+                    () => postCount,
+                    (newVal, oldVal) => {
+                        newVal.value.forEach((post,i) => {
+                            findComments(post.id)
+                                .then(comments => {
+                                    postCount.value[i].comments = comments.length
+                                })
+                        })
+                    },
+                    { deep: true }
+                )
+
+                watch(
+                    () => albumCount,
+                    (newVal, oldVal) => {
+                        newVal.value.forEach((album,i) => {
+                            findPhotos(album.id)
+                                .then(photos => {
+                                    albumCount.value[i].photos = photos.length
+                                })
+                        })
+                    },
+                    { deep: true }
+                )
+
+                watch(selectedUser, (newVal, oldVal) => {
+                    if(newVal !== null) {
+                        fetchTodosPostAlbumTogather(newVal)
+                    }
+                })
+
                 onMounted(() => {
                     whoAmI()
                     allUsers()
                 })
 
                 return {
-                    message, me, users, error, todoCount, postCount, albumCount
+                    message, me, users, error, todoCount, postCount, albumCount, selectedUser, findPhotos, findComments
                 }
             }
         }).mount('#app')

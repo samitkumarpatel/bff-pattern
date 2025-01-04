@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>bff-pattern::user</title>
+        <style>
+            body {
+                margin-left: auto;
+                margin-right: auto;
+                width: 50%;
+            }
+
+            #app {
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #fff;
+            }
+
+            #app p {
+                font-size: 1.2em;
+            }
+        </style>
+    </head>
+    <body>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <div id="app">
+            <div style="display: flex; justify-content: space-between">
+                <p>Welcome, {{ me.name }}</p>
+                <p style="color: blue; cursor: pointer">Logout</p>
+            </div>
+            <hr/>
+            <div style="color: red" v-if="Object.keys(error).length > 0">
+                {{ error }}
+                <hr/>
+            </div>
+        </div>
+
+        <script>
+            const { createApp, ref, onMounted, watch } = Vue
+            createApp({
+                setup() {
+                    const message = ref('Welcome User!')
+                    const me = ref({})
+                    const error = ref({})
+                    const selectedUser = ref(null)
+
+                    const whoAmI = () => {
+                        fetch('/api/me')
+                            .then(response => {
+                                if( !response.ok )
+                                    throw new Error(`Network response was not ok. status :${response.status}`)
+                                return response.json()
+                            })
+                            .then(data => me.value = data)
+                            .catch(e => error.value["/api/me"] = e.message)
+                    }
+
+                    onMounted(() => {
+                        whoAmI()
+                    })
+
+                    return {
+                        message, me, error, selectedUser
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>
