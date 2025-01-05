@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: api-gateway
@@ -38,6 +39,15 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
+        - id: authorisation-server
+          uri: http://localhost:9000
+          predicates:
+            - Path=/userinfo
+          filters:
+            - SaveSession
+            - TokenRelay
+            - RemoveRequestHeader=Cookie
+
         - id: ui-vue-search
           uri: http://127.0.0.1:4200
           predicates:
@@ -103,6 +113,9 @@ spring:
             - RewritePath=/json-placeholder-raw/(?<segment>.*), /$\{segment}
             - SaveSession
             - RemoveRequestHeader=Cookie
+  webflux:
+    problemdetails:
+      enabled: true
 
 management:
   endpoint:
