@@ -111,6 +111,25 @@ class WebSecurityConfig {
 	public PasswordEncoder passwordEncoder() {
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
+
+	/*
+	//https://docs.spring.io/spring-authorization-server/reference/guides/how-to-custom-claims-authorities.html
+	@Bean
+	public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
+		return (context) -> {
+			if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+				context.getClaims().claims((claims) -> {
+					Set<String> roles = AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities())
+							.stream()
+							.map(c -> c.replaceFirst("^ROLE_", ""))
+							.collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+					claims.put("roles", roles);
+				});
+			}
+		};
+	}
+
+	 */
 }
 
 record User(String id, String name, String username, String email, String phone) implements UserDetails {
