@@ -13,14 +13,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsSet;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -33,11 +34,8 @@ import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @SpringBootApplication
@@ -112,7 +110,7 @@ class WebSecurityConfig {
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
-	/*
+
 	//https://docs.spring.io/spring-authorization-server/reference/guides/how-to-custom-claims-authorities.html
 	@Bean
 	public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
@@ -124,12 +122,16 @@ class WebSecurityConfig {
 							.map(c -> c.replaceFirst("^ROLE_", ""))
 							.collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
 					claims.put("roles", roles);
+					var user = (User) context.getPrincipal().getPrincipal();
+
+					claims.put("id",user.id());
+					claims.put("name", user.name());
+					claims.put("email", user.email());
+					claims.put("phone", user.phone());
 				});
 			}
 		};
 	}
-
-	 */
 }
 
 record User(String id, String name, String username, String email, String phone) implements UserDetails {
@@ -137,7 +139,19 @@ record User(String id, String name, String username, String email, String phone)
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of();
+		return List.of(
+				new GrantedAuthority() {
+					@Override
+					public String getAuthority() {
+						return "READ";
+					}
+				},
+				new GrantedAuthority() {
+					@Override
+					public String getAuthority() {
+						return "WRITE";
+					}
+				});
 	}
 
 	@Override
