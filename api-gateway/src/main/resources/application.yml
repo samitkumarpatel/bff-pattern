@@ -42,13 +42,13 @@ spring:
         - id: authorisation-server
           uri: http://localhost:9000
           predicates:
-            - Path=/userinfo
+            - Path=/userinfo, /oauth2/**
           filters:
             - SaveSession
             - TokenRelay
             - RemoveRequestHeader=Cookie
 
-        - id: ui-vue-search
+        - id: ui-vue-user
           uri: http://127.0.0.1:4200
           predicates:
             - Path=/, /spa/**, /ui/**, /frontend/**
@@ -57,8 +57,17 @@ spring:
             - SaveSession
             - TokenRelay
 
-        - id: ui-vue-admin
+        - id: ui-vue-search
           uri: http://127.0.0.1:4201
+          predicates:
+            - Path=/admin/search/**
+          filters:
+            - RewritePath=/.*,/ # Rewrite all matched paths to "/"
+            - SaveSession
+            - TokenRelay
+
+        - id: ui-vue-admin
+          uri: http://127.0.0.1:4202
           predicates:
             - Path=/admin/**
           filters:
@@ -66,14 +75,7 @@ spring:
             - SaveSession
             - TokenRelay
 
-        - id: ui-vue-user
-          uri: http://127.0.0.1:4202
-          predicates:
-            - Path=/user/**
-          filters:
-            - RewritePath=/.*,/ # Rewrite all matched paths to "/"
-            - SaveSession
-            - TokenRelay
+
 
         - id: api
           uri: http://localhost:8081

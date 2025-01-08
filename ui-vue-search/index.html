@@ -108,6 +108,28 @@
                 padding: 15px;
             }
 
+            .whoami {
+
+            }
+            .whoami__box {
+                display: none;
+                border: 1px solid black;
+                border-radius: 5px;
+                position: absolute;
+                z-index: 1;
+                background-color: white;
+                padding: 5px;
+            }
+
+            .whoami__icon:hover {
+                cursor: pointer;
+                border-bottom: 1px solid black;
+            }
+
+            .whoami__icon:hover + .whoami__box {
+                display: block;
+            }
+
         </style>
     </head>
     <body>
@@ -116,7 +138,15 @@
         <div id="app">
             <div style="display: flex; justify-content: space-between">
                 <div>{{ message }}</div>
-                <div>Hello, {{me?.name}}</div>
+                <div class="whoami">
+                    <p class="whoami__icon">Welcome {{ me.name }}</p>
+                    <div class="whoami__box">
+                        <p>Id: {{me?.principal?.claims?.id}}</p>
+                        <p>name: {{me?.principal?.claims?.name}}</p>
+                        <p>Email: {{me?.principal?.claims?.email}}</p>
+                        <p>Phone: {{me?.principal?.claims?.phone}}</p>
+                    </div>
+                </div>
             </div>
             <hr/>
 

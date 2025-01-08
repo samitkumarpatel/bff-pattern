@@ -11,7 +11,7 @@
 	<groupId>net.samitkumar</groupId>
 	<artifactId>json-placeholder-client</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>json-placehosder-client</name>
+	<name>json-placeholder-client</name>
 	<description>Spring Webflux Http Client</description>
 	<url/>
 	<licenses>

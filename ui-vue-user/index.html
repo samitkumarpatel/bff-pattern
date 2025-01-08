@@ -21,6 +21,61 @@
             #app p {
                 font-size: 1.2em;
             }
+
+            .whoami {
+
+            }
+            .whoami__box {
+                display: none;
+                border: 1px solid black;
+                border-radius: 5px;
+                position: absolute;
+                z-index: 1;
+                background-color: white;
+                padding: 5px;
+            }
+
+            .whoami__icon:hover {
+                cursor: pointer;
+                border-bottom: 1px solid black;
+            }
+
+            .whoami__icon:hover + .whoami__box {
+                display: block;
+            }
+
+            .content ul li {
+                list-style-type: none;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid gray;
+                width: 80%;
+                margin-top: 5px;
+                font-size: 1.5rem;
+            }
+
+            span.user__name {
+
+            }
+
+            .content ul li:hover {
+                background-color: gray;
+                color: white;
+                cursor: pointer;
+            }
+
+            .action__icon {
+                border: 1px solid blue;
+                border-radius: 5px;
+                padding: 5px;
+                margin-right: 10px;
+            }
+            .action__icon:hover {
+                background-color: green;
+                color: blue;
+                font-size: 2rem;
+            }
+
         </style>
     </head>
     <body>
@@ -28,13 +83,34 @@
 
         <div id="app">
             <div style="display: flex; justify-content: space-between">
-                <p>Welcome, {{ me.name }}</p>
+                <div class="whoami">
+                    <p class="whoami__icon">Welcome {{ me.name }}</p>
+                    <div class="whoami__box">
+                        <p>Id: {{me?.principal?.claims?.id}}</p>
+                        <p>name: {{me?.principal?.claims?.name}}</p>
+                        <p>Email: {{me?.principal?.claims?.email}}</p>
+                        <p>Phone: {{me?.principal?.claims?.phone}}</p>
+                    </div>
+                </div>
                 <p style="color: blue; cursor: pointer">Logout</p>
             </div>
             <hr/>
             <div style="color: red" v-if="Object.keys(error).length > 0">
                 {{ error }}
                 <hr/>
+            </div>
+            <div class="content">
+                <ul>
+                    <li v-for="user in users" style="display: flex; gap: 10px;justify-content: space-between">
+                        <span class="user__name">
+                            {{ user.username }}
+                        </span>
+                        <div>
+                            <small class="action__icon">&#8595;</small>
+                            <small class="action__icon">&#8594;</small>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
 
@@ -46,6 +122,7 @@
                     const me = ref({})
                     const error = ref({})
                     const selectedUser = ref(null)
+                    const users = ref([])
 
                     const whoAmI = () => {
                         fetch('/api/me')
@@ -58,12 +135,25 @@
                             .catch(e => error.value["/api/me"] = e.message)
                     }
 
+                    const allUsers = () => {
+                        fetch(`/json-placeholder-raw/users`)
+                            .then(response => {
+                                if( !response.ok )
+                                    throw new Error(`Network response was not ok. status :${response.status}`)
+                                return response.json()
+                            })
+                            .then(data => data.filter(u => u.username !== me.value.name))
+                            .then(data => users.value = data)
+                            .catch(e => error.value["/json-placeholder/users"] = e.message)
+                    }
+
                     onMounted(() => {
                         whoAmI()
+                        allUsers()
                     })
 
                     return {
-                        message, me, error, selectedUser
+                        message, me, error, selectedUser, users
                     }
                 }
             }).mount('#app')
