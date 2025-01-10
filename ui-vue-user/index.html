@@ -69,15 +69,16 @@
             }
 
             .action__icon {
-                border: 1px solid blue;
-                border-radius: 5px;
-                padding: 15px;
+
+                padding: 5px;
                 margin-right: 10px;
             }
             .action__icon:hover {
                 background-color: green;
                 color: blue;
-                font-size: 2rem;
+                font-size: 1.5rem;
+                border: 1px solid blue;
+                border-radius: 5px;
             }
 
             .content__user {
@@ -164,7 +165,7 @@
                                 {{ user.username }}
                             </span>
                             <div>
-                                <small class="action__icon">&#8595;</small>
+                                <small class="action__icon">&#9947;</small>
                                 <small class="action__icon" @click="() => selectedUser = user">&#8594;</small>
                             </div>
                         </li>
