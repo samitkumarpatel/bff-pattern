@@ -42,7 +42,7 @@ spring:
         - id: authorisation-server
           uri: http://localhost:9000
           predicates:
-            - Path=/userinfo, /oauth2/**
+            - Path=/userinfo, /oauth2/**, /csrf
           filters:
             - SaveSession
             - TokenRelay
@@ -114,6 +114,15 @@ spring:
           filters:
             - RewritePath=/json-placeholder-raw/(?<segment>.*), /$\{segment}
             - SaveSession
+            - RemoveRequestHeader=Cookie
+
+        - id: db-client
+          uri: http://localhost:8083
+          predicates:
+            - Path=/db/**
+          filters:
+            - SaveSession
+            - TokenRelay
             - RemoveRequestHeader=Cookie
   webflux:
     problemdetails:

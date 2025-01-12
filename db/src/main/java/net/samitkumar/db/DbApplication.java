@@ -4,12 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -44,6 +49,19 @@ public class DbApplication {
 						)
 				)
 				.build();
+	}
+}
+
+@Configuration
+@EnableWebFluxSecurity
+class SecurityConfig {
+	@Bean
+	SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+		http
+				.csrf(ServerHttpSecurity.CsrfSpec::disable)
+				.authorizeExchange(exchanges -> exchanges.anyExchange().authenticated())
+				.oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec.jwt(Customizer.withDefaults()));
+		return http.build();
 	}
 }
 

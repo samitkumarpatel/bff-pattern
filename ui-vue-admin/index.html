@@ -74,6 +74,16 @@
             display: block;
         }
 
+        label {
+            display: block;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -91,7 +101,6 @@
                     <p>Phone: {{me?.principal?.claims?.phone}}</p>
                 </div>
             </div>
-
         </div>
         <hr/>
 
@@ -169,9 +178,18 @@
                     </ul>
                 </div>
             </div>
-            <div style="margin-top: 15px">
-                <button style="height: 40px;">Save this data to db</button>
-                <button style="height: 40px;">Disable This User</button>
+
+            <div v-if="selectedUser" style="margin-top: 10px">
+                <form @submit.prevent="onboard">
+                    <label>
+                        Roles: <br/>
+                        <select v-model="roles" multiple>
+                            <option :value="role" v-for="role in ['READ', 'WRITE', 'ADMIN']">{{ role}}</option>
+                        </select>
+                    </label>
+                    <button type="submit">Onboard</button>
+                    <button type="submit">Deactivate</button>
+                </form>
             </div>
 
         </div>
@@ -190,6 +208,8 @@
                 const postCount = ref(0)
                 const albumCount = ref(0)
                 const selectedUser = ref(null)
+                const overview = ref(false)
+                const roles = ref([])
 
                 const whoAmI = () => {
                     fetch('/api/me')
@@ -266,6 +286,45 @@
                         .catch(e => error.value["/json-placeholder/posts/*"] = e.message)
                 }
 
+                const onboard = () => {
+                    const data = {
+                        "username": selectedUser.username,
+                        "password": "password",
+                        "active": true,
+                        "roles": roles.value
+                    }
+
+                    fetch(`/db/user`, {
+                        method: "POST",
+                        data: JSON.stringify(data),
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error(`Network error ${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => {
+                            console.log(data)
+                            roles.value = [];
+                        })
+                        .catch(e => error.value['/db/user'] = e.message)
+                }
+
+                const adminUser = () => {
+                    fetch(`/db/user/11`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error(`Network error ${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => console.log(data))
+                        .catch(e => error.value['/db/user'] = e.message)
+                }
+
                 watch(
                     () => postCount,
                     (newVal, oldVal) => {
@@ -301,10 +360,12 @@
                 onMounted(() => {
                     whoAmI()
                     allUsers()
+                    adminUser()
                 })
 
                 return {
-                    message, me, users, error, todoCount, postCount, albumCount, selectedUser, findPhotos, findComments
+                    message, me, users, error, todoCount, postCount, albumCount,
+                        selectedUser, findPhotos, findComments, onboard, overview, roles
                 }
             }
         }).mount('#app')

@@ -25,9 +25,13 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.annotation.GetExchange;
@@ -55,6 +59,16 @@ public class Oauth2AuthServerApplication {
 	}
 
 }
+
+//@Controller
+//class ApplicationEndpoint {
+//
+//	@ResponseBody
+//	@GetMapping("/csrf")
+//	public CsrfToken csrf(CsrfToken csrfToken) {
+//		return csrfToken;
+//	}
+//}
 
 @Configuration
 @EnableWebSecurity
