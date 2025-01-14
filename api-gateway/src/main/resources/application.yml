@@ -42,7 +42,7 @@ spring:
         - id: authorisation-server
           uri: http://localhost:9000
           predicates:
-            - Path=/userinfo, /oauth2/**, /csrf
+            - Path=/userinfo
           filters:
             - SaveSession
             - TokenRelay
@@ -74,8 +74,6 @@ spring:
             - RewritePath=/.*,/ # Rewrite all matched paths to "/"
             - SaveSession
             - TokenRelay
-
-
 
         - id: api
           uri: http://localhost:8081
@@ -123,7 +121,6 @@ spring:
           filters:
             - SaveSession
             - TokenRelay
-            - RemoveRequestHeader=Cookie
   webflux:
     problemdetails:
       enabled: true

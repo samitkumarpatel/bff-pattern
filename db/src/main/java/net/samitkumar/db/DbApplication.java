@@ -1,20 +1,15 @@
 package net.samitkumar.db;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -26,8 +21,11 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
+@Slf4j
 @SpringBootApplication
 public class DbApplication {
 
@@ -39,6 +37,10 @@ public class DbApplication {
 	RouterFunction<ServerResponse> routerFunction(DbRouterHandler dbRouterHandler) {
 		return RouterFunctions
 				.route()
+				.before(request -> {
+					log.info("REQUEST {} {}", request.method(), request.path());
+					return request;
+				})
 				.path("/db", dbBuilder -> dbBuilder
 						.path("/user", userbuilder -> userbuilder
 								.POST("", dbRouterHandler::newUser)
@@ -48,20 +50,11 @@ public class DbApplication {
 								.PUT("/{id}", dbRouterHandler::updateUser)
 						)
 				)
+				.after((request, response) -> {
+					log.info("RESPONSE {} {} {}", request.method(), request.path(), response.statusCode());
+					return response;
+				})
 				.build();
-	}
-}
-
-@Configuration
-@EnableWebFluxSecurity
-class SecurityConfig {
-	@Bean
-	SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-		http
-				.csrf(ServerHttpSecurity.CsrfSpec::disable)
-				.authorizeExchange(exchanges -> exchanges.anyExchange().authenticated())
-				.oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec.jwt(Customizer.withDefaults()));
-		return http.build();
 	}
 }
 

@@ -117,6 +117,7 @@
                     <option :value="user.id" v-for="user in users">{{ user.name}} (id: {{user.id}})</option>
                 </select>
             </label>
+            <h2 v-if="onboardStatus">This user is Onboarded to the System</h2>
         </div>
         <div v-if="selectedUser">
             <h3>User Overview :</h3>
@@ -160,7 +161,6 @@
                         <li>Enable Todo's count: {{ todoCount.filter(t => t.completed ).length }}</li>
                         <li>Disable Todo's count: {{ todoCount.filter(t => !t.completed ).length }}</li>
                     </ul>
-
                 </div>
                 <div style="text-align: left" class="child">
                     <p>Total <strong>Post</strong> count : {{ postCount.length }} </p>
@@ -187,7 +187,7 @@
                             <option :value="role" v-for="role in ['READ', 'WRITE', 'ADMIN']">{{ role}}</option>
                         </select>
                     </label>
-                    <button type="submit">Onboard</button>
+                    <button type="submit" :disabled="onboardStatus">Onboard</button>
                     <button type="submit">Deactivate</button>
                 </form>
             </div>
@@ -210,6 +210,7 @@
                 const selectedUser = ref(null)
                 const overview = ref(false)
                 const roles = ref([])
+                const onboardStatus = ref(false)
 
                 const whoAmI = () => {
                     fetch('/api/me')
@@ -286,17 +287,31 @@
                         .catch(e => error.value["/json-placeholder/posts/*"] = e.message)
                 }
 
+                const hasTheUserOnboarded = (id) => {
+                    fetch(`/db/user/${id}`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error(`Network error . statusCode ${response.status}`)
+                            return response.json()
+                        })
+                        .then(data => onboardStatus.value = true)
+                        .catch(e => {
+                            onboardStatus.value = false
+                            error['/db/user/id'] = e.message
+                        })
+                }
+
                 const onboard = () => {
                     const data = {
-                        "username": selectedUser.username,
+                        "username": users.value.find(u => u.id === selectedUser.value).username,
                         "password": "password",
                         "active": true,
-                        "roles": roles.value
+                        "roles": roles.value.map(role => ({ role }))
                     }
 
                     fetch(`/db/user`, {
                         method: "POST",
-                        data: JSON.stringify(data),
+                        body: JSON.stringify(data),
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
@@ -308,20 +323,9 @@
                             return response.json()
                         })
                         .then(data => {
-                            console.log(data)
                             roles.value = [];
+                            onboardStatus.value = true
                         })
-                        .catch(e => error.value['/db/user'] = e.message)
-                }
-
-                const adminUser = () => {
-                    fetch(`/db/user/11`)
-                        .then(response => {
-                            if(!response.ok)
-                                throw new Error(`Network error ${response.status}`)
-                            return response.json()
-                        })
-                        .then(data => console.log(data))
                         .catch(e => error.value['/db/user'] = e.message)
                 }
 
@@ -354,18 +358,18 @@
                 watch(selectedUser, (newVal, oldVal) => {
                     if(newVal !== null) {
                         fetchTodosPostAlbumTogather(newVal)
+                        hasTheUserOnboarded(newVal)
                     }
                 })
 
                 onMounted(() => {
                     whoAmI()
                     allUsers()
-                    adminUser()
                 })
 
                 return {
                     message, me, users, error, todoCount, postCount, albumCount,
-                        selectedUser, findPhotos, findComments, onboard, overview, roles
+                        selectedUser, findPhotos, findComments, onboard, overview, roles, onboardStatus
                 }
             }
         }).mount('#app')
