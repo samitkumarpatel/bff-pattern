@@ -42,7 +42,7 @@ spring:
         - id: authorisation-server
           uri: http://localhost:9000
           predicates:
-            - Path=/userinfo
+            - Path=/userinfo, /oauth2/**
           filters:
             - SaveSession
             - TokenRelay
@@ -121,6 +121,7 @@ spring:
           filters:
             - SaveSession
             - TokenRelay
+            - RemoveRequestHeader=Cookie
   webflux:
     problemdetails:
       enabled: true

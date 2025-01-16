@@ -126,6 +126,11 @@ interface UserRepository extends ListCrudRepository<User, Long> {
 	Optional<User> findUserByUsername(String username);
 }
 
+@Table("messages")
+record Message(@Id Long id, Long senderId, Long receiverId, String content, @ReadOnlyProperty LocalDate createdAt, @ReadOnlyProperty Boolean isRead){}
+
+interface MessageRepository extends ListCrudRepository<Message, Long> {}
+
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class UserNotFoundException extends RuntimeException {
 	UserNotFoundException() {}

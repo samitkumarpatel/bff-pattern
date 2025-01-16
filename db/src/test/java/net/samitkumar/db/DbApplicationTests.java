@@ -20,7 +20,7 @@ class DbApplicationTests {
 	}
 
 	@Test
-	void entityTest(@Autowired UserRepository userRepository) {
+	void entityTest(@Autowired UserRepository userRepository, @Autowired MessageRepository messageRepository) {
 		assertAll(
 				//all
 				() -> userRepository
@@ -60,7 +60,18 @@ class DbApplicationTests {
 					userRepository
 						.findAll()
 						.forEach(System.out::println);
-				}
+				},
+				() -> messageRepository
+						.saveAll(
+								List.of(
+										new Message(null, 1L, 2L, "Hi there", null, null),
+										new Message(null, 2L, 1L, "Yo", null, null)
+
+								)
+						),
+				() -> messageRepository
+						.findAll()
+						.forEach(System.out::println)
 		);
 	}
 
