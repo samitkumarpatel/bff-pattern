@@ -2,6 +2,7 @@ package net.samitkumar.oauth2_auth_server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -53,7 +54,6 @@ public class Oauth2AuthServerApplication {
 		HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
 		return factory.createClient(JsonPlaceHolderHttpClient.class);
 	}
-
 }
 
 @Configuration
@@ -187,10 +187,8 @@ record User(String id, String name, String username, String email, String phone)
 
 @HttpExchange(url = "/users", accept = MediaType.APPLICATION_JSON_VALUE)
 interface JsonPlaceHolderHttpClient {
-
 	@GetExchange
 	Optional<List<User>> findUserByUsername(@RequestParam String username);
-
 }
 
 @Service
@@ -205,11 +203,10 @@ class UserDetailService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		var userDetails = jsonPlaceHolderHttpClient.findUserByUsername(username).orElseThrow();
-		logger.info("#### UserDetails response {}", userDetails);
-
-		return userDetails.getFirst();
+		var userDetails = jsonPlaceHolderHttpClient
+				.findUserByUsername(username).get().stream().findFirst()
+				.orElseThrow();
+		logger.info("#### UserDetails from json-placeholder or from db response {}", userDetails);
+		return userDetails;
 	}
-
 }
-
