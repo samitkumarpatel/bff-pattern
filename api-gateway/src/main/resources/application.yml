@@ -122,6 +122,14 @@ spring:
             - SaveSession
             - TokenRelay
             - RemoveRequestHeader=Cookie
+        - id: websocket-client
+          uri: http://localhost:8084
+          predicates:
+            - Path=/stomp-endpoint/**, /user/queue/**, /topic/**, /app/**
+          filters:
+            - SaveSession
+            - TokenRelay
+            - RemoveRequestHeader=Cookie
   webflux:
     problemdetails:
       enabled: true
