@@ -1,0 +1,1 @@
+- [Spring Security WebSocket](https://www.baeldung.com/spring-security-websockets)

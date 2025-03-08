@@ -123,7 +123,7 @@
                 <p style="color: blue; cursor: pointer">Logout</p>
             </div>
             <hr/>
-            <div style="color: red" v-if="Object.keys(error).length > 0">
+            <div style="color: white;background-color: red;border-radius: 6px;text-align: center;" v-if="Object.keys(error).length > 0">
                 {{ error }}
                 <hr/>
             </div>
@@ -209,11 +209,11 @@
                             .then(data => data.filter(u => u.username !== me.value.name))
                             .then(data => users.value = data)
                             .catch(e => error.value["/json-placeholder/users"] = e.message)
-                            .finally(() => users.value = [{username: 1}, {username: 2}, {username: 3}])
+                            //.finally(() => users.value = [{username: 1}, {username: 2}, {username: 3}])
                     }
 
                     const stompConnect = () => {
-                        const sockjs = new SockJS(`${apiHost}/stomp-endpoint`);
+                        const sockjs = new SockJS(`${apiHost}/stomp-endpoint?access_token=${me.value.token.tokenValue}`);
                         stompClient.value = Stomp.over(sockjs)
 
                         stompClient.value.connect({}, (frame) => {
@@ -241,7 +241,10 @@
                     onMounted(() => {
                         whoAmI()
                         allUsers()
-                        stompConnect()
+                        setTimeout(() => {
+                            stompConnect()
+                        }, 2000)
+                        //stompConnect()
                     })
 
                     return {
