@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -13,7 +14,12 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
@@ -57,6 +63,21 @@ class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
 		registry.setApplicationDestinationPrefixes("/app");
 		registry.setUserDestinationPrefix("/user");
 	}
+
+	@Override
+	public void configureClientInboundChannel(ChannelRegistration registration) {
+		registration.interceptors(new ChannelInterceptor() {
+			@Override
+			public org.springframework.messaging.Message<?> preSend(org.springframework.messaging.Message<?> message, MessageChannel channel) {
+				StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+				if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+					// Access authentication header(s) and invoke accessor.setUser(user)
+					accessor.setUser(accessor.getUser());
+				}
+				return message;
+			}
+		});
+	}
 }
 
 @Controller
@@ -92,9 +113,16 @@ class WebSocketSecurityConfig {
 	@Bean
 	AuthorizationManager<org.springframework.messaging.Message<?>> messageAuthorizationManager(MessageMatcherDelegatingAuthorizationManager.Builder messages) {
 		//messages.simpDestMatchers("/user/**").hasRole("USER")
-		messages.anyMessage().authenticated();
+		messages
+				.anyMessage().authenticated();
+				/*.nullDestMatcher().authenticated()
+				.simpSubscribeDestMatchers("/user/queue/errors").permitAll()
+				.simpDestMatchers("/app/**").hasRole("USER")
+				.simpSubscribeDestMatchers("/user/**", "/topic/friends/*").hasRole("USER")
+				.simpTypeMatchers(MESSAGE, SUBSCRIBE).denyAll()
+				.anyMessage().denyAll();*/
 
 		return messages.build();
 	}
-	
+
 }

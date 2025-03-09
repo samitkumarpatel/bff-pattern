@@ -1,1 +1,2 @@
 - [Spring Security WebSocket](https://www.baeldung.com/spring-security-websockets)
+- [WebSocket Security](https://docs.spring.io/spring-security/reference/servlet/integrations/websocket.html)

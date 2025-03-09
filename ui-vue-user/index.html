@@ -213,7 +213,7 @@
                     }
 
                     const stompConnect = () => {
-                        const sockjs = new SockJS(`${apiHost}/stomp-endpoint?access_token=${me.value.token.tokenValue}`);
+                        const sockjs = new SockJS(`${apiHost}/stomp-endpoint?token=${me.value.token.tokenValue}`);
                         stompClient.value = Stomp.over(sockjs)
 
                         stompClient.value.connect({}, (frame) => {
