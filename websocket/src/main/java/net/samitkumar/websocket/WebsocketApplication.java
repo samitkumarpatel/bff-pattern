@@ -29,6 +29,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
@@ -72,12 +73,18 @@ class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
 				StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 				if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 					// Access authentication header(s) and invoke accessor.setUser(user)
-					accessor.setUser(accessor.getUser());
+					List<String> authHeaders = accessor.getNativeHeader("Authorization");
+
+					if (authHeaders != null && !authHeaders.isEmpty()) {
+						String token = authHeaders.get(0).replace("Bearer ", ""); // Remove "Bearer " prefix
+						System.out.println("####Token: " + token);
+					}
 				}
 				return message;
 			}
 		});
 	}
+
 }
 
 @Controller
